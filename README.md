@@ -59,7 +59,22 @@ Engine and mechanical issue guidance
 Initial fixes and tips
 
 ## 📁 Project Structure
-CARChatbot/
+
+```
+📂 Car ChatBot
+ ├── 📂 app
+                        
+ ├── 📂 backend
+          
+ ├── 📂 data
+
+ ├── 📂 models
+
+ ├── 📄 .gitignore      
+ ├── 📄 README.md     
+```
+
+CAR Chatbot
 │
 ├── app/               # Main backend and chatbot logic
 ├── models/            # ML and NLP model files
