@@ -1,0 +1,33 @@
+[Client (Flutter App / Web)] 
+        ↓ upload (PDF / photo)
+[FastAPI Upload] → [Storage (uploads/)] 
+        ↓
+[OCR Engine: Tesseract / Google Vision] 
+        ↓ plain_text
+[Text Normalizer / Parser] 
+        ↓
+[Database: SQLite / PostgreSQL / MongoDB]
+        ↓
+[LLM SLA Extraction (LangChain → OpenAI)]
+        ↓ SLA JSON
+[Combine with VIN Lookup (NHTSA)] → [API Response / Dashboard]
+=======================================================================================
+
+o	Websites like:
+	LawDepot
+	JotForm
+	SignNow
+	eForms
+	US dealers’ public sample forms
+=======================================================================================
+
+2.	Bank loan sample documents
+o	Chase Auto Loan sample contract
+o	Wells Fargo Auto Loan examples
+o	Credit unions
+=======================================================================================
+
+3.	Government-disclosed finance documents
+o	Some U.S. state sites (California DMV, FTC Auto Warranty docs)
+=======================================================================================
+
