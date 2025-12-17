@@ -1,6 +1,7 @@
-from fastapi import FastAPI, UploadFile
-from .contract_analyzer import analyze_contract
-from .pdf_reader import extract_text_from_pdf
+from backend.db import save_contract
+from fastapi import FastAPI, UploadFile, File
+from backend.contract_analyzer import analyze_contract
+from backend.pdf_reader import extract_text_from_pdf
 
 app = FastAPI()
 
@@ -12,6 +13,6 @@ def home():
 async def analyze_contract_api(file: UploadFile):
     pdf_bytes = await file.read()
     text = extract_text_from_pdf(pdf_bytes)
+    save_contract(file.filename,text)
     result = analyze_contract(text)
     return {"analysis": result}
-

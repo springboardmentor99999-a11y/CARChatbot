@@ -1,9 +1,7 @@
-from PyPDF2 import PdfReader
-from io import BytesIO
+from pdfminer.high_level import extract_text
 
-def extract_text_from_pdf(pdf_bytes):
-    reader = PdfReader(BytesIO(pdf_bytes))
-    text = ""
-    for page in reader.pages:
-        text += page.extract_text()
-    return text
+def extract_text_from_pdf(file):
+    try:
+        return extract_text(file)
+    except:
+        return ""
