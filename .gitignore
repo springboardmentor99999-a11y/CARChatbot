@@ -1,5 +1,18 @@
-.env
-.venv/
+﻿# Python
 __pycache__/
 *.pyc
-push_output.txt
+*.pyo
+*.pyd
+
+# Virtual env
+.venv/
+
+# Databases
+*.db
+
+# Uploads
+uploads/
+
+# OS
+.DS_Store
+Thumbs.db
