@@ -47,4 +47,4 @@ Contract Text:
     """
     
     response = llm.invoke(prompt)
-    return response
+    return response.content
