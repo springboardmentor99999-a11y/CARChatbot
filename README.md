@@ -1,91 +1,72 @@
 CARChatbot Project
 
 Mentor: Mahaprasad Jena
+Program: Infosys Internship Program
 Repository: https://github.com/springboardmentor99999-a11y/CARChatbot
 
 🚗 Project Overview
 
-CARChatbot is a machine learning + NLP-based chatbot that helps users with car-related queries such as:
+CARChatbot is a Python-based backend project that assists users with car-related queries such as loan understanding, insurance support, and basic contract analysis.
+The project is designed with a modular structure and is extendable for future NLP and machine learning integrations.
 
-Insurance assistance
+⚙️ Key Features
 
-Loan and EMI support
+PDF contract reading and text extraction
 
-Repair & maintenance suggestions
+Contract analysis logic
 
-Car model comparison
+Modular backend architecture
 
-Troubleshooting common issues
+Clean and scalable codebase
 
-This repository will be developed by a batch of interns working under assigned branches.
+Ready for AI / NLP enhancement
 
-🔒 Branch Rules for Interns
-❗ DO NOT push anything to the main branch.
-
-All interns must work ONLY inside their assigned branch.
-
-Example branch names:
-
-khushisu192-branch
-
-harshithboyina-branch
-
-kanhaiyagupta6773-branch
-
-…and so on.
-
-If you don't know your branch name, ask the mentor.
-
-🛠️ How Interns Should Work
-1️⃣ Clone the repository
-git clone https://github.com/springboardmentor99999-a11y/CARChatbot.git
-cd CARChatbot
-
-2️⃣ Create your branch
-git checkout -b <your-branch-name>
-
-3️⃣ Add your project files
-
-Place your:
-
-Python scripts
-
-Models
-
-Datasets
-
-Images
-
-Jupyter Notebooks
-
-Documentation
-
-4️⃣ Commit and push
-git add .
-git commit -m "My first commit"
-git push origin <your-branch-name>
-
-📁 Recommended Folder Structure
+📁 Project Structure
 CARChatbot/
 │
-├── app/               # Main backend code
-├── models/            # ML models
-├── data/              # Training data
-├── notebooks/         # Jupyter notebooks
-├── images/            # Reference images or documentation visuals
-├── docs/              # Documentation files
+├── backend/
+│   ├── main.py
+│   ├── contract_analyzer.py
+│   ├── pdf_reader.py
+│   └── __init__.py
+│
+├── data/        # Sample or input data
+├── docs/        # Documentation files
 └── README.md
 
-✔️ Pull Request Process
+▶️ How to Run the Project
 
-Once work is ready:
+Activate virtual environment
 
-Push to your branch
+Install dependencies
 
-Create a Pull Request to main
+Run the backend module
 
-Mentor will review and approve or request changes
+python -m backend.main
 
-🙌 Contributing
+Expected Output
+API KEY LOADED: True
 
-Follow guidelines in CONTRIBUTING.md (to be added soon).
+🔒 Contribution Guidelines
+
+Work only on your assigned branch
+
+Do not push directly to main
+
+Submit changes via Pull Request
+
+Keep commits small and meaningful
+
+🧑‍💻 Intern Contribution
+
+Branch: arijitsen-branch
+
+Contributor: Arijit Sen
+
+Work Done:
+
+Backend execution verified
+
+Contract analysis logic tested
+
+Repository structure understood
