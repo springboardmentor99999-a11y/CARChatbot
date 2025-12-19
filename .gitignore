@@ -33,3 +33,27 @@ datasets/
 # System files
 .DS_Store
 Thumbs.db
+
+## Setup Instructions (For Interns)
+
+### 1. Clone the repository
+git clone https://github.com/springboardmentor99999-a11y/CARChatbot.git
+cd CARChatbot
+
+### 2. Create virtual environment
+python -m venv .venv
+.venv\Scripts\activate
+
+### 3. Install dependencies
+pip install fastapi uvicorn pdfplumber python-dotenv langchain-openai
+
+### 4. Create .env file
+Create backend/.env and add:
+OPENAI_API_KEY=your_api_key_here
+
+### 5. Initialize database
+python backend/init_db.py
+
+### 6. Run backend
+uvicorn backend.main:app --reload
+
