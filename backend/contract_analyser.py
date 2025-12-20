@@ -1,7 +1,6 @@
-'''
 from dotenv import load_dotenv
 import os
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 import PyPDF2
 
 
@@ -20,50 +19,32 @@ env_path = os.path.join(current_dir, ".env")
 load_dotenv(env_path)
 
 # Read API key
-Google_API_Key = os.getenv("Google_API_Key")
-print("API KEY LOADED:", Google_API_Key is not None)
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+print("API KEY LOADED:", OPENAI_API_KEY is not None)
 
 # Initialize LLM
-llm = ChatGoogleGenerativeAI(
-   model="models/gemini-flash-latest",
-   temperature=0,
-   max_tokens=None,
-   timeout=None,
-   max_retries=2,)
-'''
+llm = ChatOpenAI(
+    temperature=0,
+    model="gpt-4o-mini",
+    api_key=OPENAI_API_KEY
+)
+
 
 def analyze_contract(text: str):
-    # This is currently a fallback response structure
-    return {
-        "loan_type": "lease",
-        "apr_percent": None,
-        "monthly_payment": None,
-        "term_months": None,
-        "down_payment": None,
-        "finance_amount": None,
-        "fees": {
-            "documentation_fee": None,
-            "acquisition_fee": None,
-            "registration_fee": None,
-            "other_fees": None
-        },
-        "penalties": {
-            "late_payment": None,
-            "early_termination": None,
-            "over_mileage": None
-        },
-        "lease_specific": {
-            "residual_value": None,
-            "mileage_allowance": None,
-            "buyout_price": None
-        },
-        "vehicle": {
-            "vin": None,
-            "make": None,
-            "model": None,  # Moved inside the vehicle object
-            "year": None    # Moved inside the vehicle object
-        },
-        "red_flags": [],
-        "fairness_score": None,
-        "note": "LLM disabled - quota exceeded"
-    }
+    prompt = f"""
+You are an expert in car lease and loan contract analysis.
+
+Analyze this contract and summarize:
+- Total Payment terms
+- APR or financial risks
+- Fees, penalties, hidden charges
+- Conditions unsafe for customer
+- Missing disclosures
+- Negotiation items
+
+Contract Text:
+{text}
+    """
+    
+    response = llm.invoke(prompt)
+    return response.content
