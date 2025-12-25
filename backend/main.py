@@ -1,16 +1,17 @@
-from fastapi import FastAPI, UploadFile
-from .contract_analyzer import analyze_contract
-from .pdf_reader import extract_text_from_pdf
+from pdf_reader import extract_text_from_pdf
+from db import save_contract
+from contract_analyzer import analyze_contract
 
-app = FastAPI()
+def ingest_pdf(pdf_filename):
+    print("📄 Extracting PDF text...")
+    text = extract_text_from_pdf(f"samples/{pdf_filename}")
 
-@app.get("/")
-def home():
-    return {"message": "API is running"}
+    print("💾 Saving to database...")
+    save_contract(pdf_filename, text)
 
-@app.post("/analyze")
-async def analyze_contract_api(file: UploadFile):
-    pdf_bytes = await file.read()
-    text = extract_text_from_pdf(pdf_bytes)
     result = analyze_contract(text)
-    return {"analysis": result}
+    print("📊 ANALYZED CONTRACT DATA")
+    print(result)
+
+if __name__ == "__main__":
+    ingest_pdf("sample_contract.pdf")
