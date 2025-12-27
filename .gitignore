@@ -33,3 +33,9 @@ datasets/
 # System files
 .DS_Store
 Thumbs.db
+.env
+.env.txt
+__pycache__/
+*.pyc
+database.db
+
