@@ -1,7 +1,7 @@
+from backend.db import save_contracts
 from fastapi import FastAPI,UploadFile
-from contract_analyzer import analyze_contract
-from pdf_reader import extract_text_from_pdf
-
+from backend.contract_analyzer import analyze_contract
+from backend.pdf_reader import extract_text_from_pdf
 
 app = FastAPI()
 
