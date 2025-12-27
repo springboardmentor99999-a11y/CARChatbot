@@ -1,6 +1,6 @@
 from pdf_reader import extract_text_from_pdf
 from db import save_contract
-from contract_analyser import analyze_contract
+from contract_analyzer import analyze_contract
 
 def ingest_pdf(pdf_filename):
     print("📄 Extracting PDF text...")
