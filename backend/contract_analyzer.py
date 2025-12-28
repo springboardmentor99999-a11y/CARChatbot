@@ -12,6 +12,6 @@ def analyze_contract(text: str):
             "vin": "EXTRACTED_FROM_TEXT",
             "make": "Toyota",
             "model": "Camry",
-            "year": 2023
+            "year": 2024
         }
     }
