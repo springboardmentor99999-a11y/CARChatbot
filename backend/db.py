@@ -29,7 +29,8 @@ def save_contract(file_name: str, raw_text: str):
     )
     conn.commit()
     conn.close()
-    
+
+
 def create_sla_table():
     conn = get_connection()
     cursor = conn.cursor()
@@ -44,6 +45,7 @@ def create_sla_table():
     conn.commit()
     conn.close()
 
+
 def save_sla(contract_id: int, sla_json: str):
     conn = get_connection()
     cursor = conn.cursor()
@@ -53,4 +55,28 @@ def save_sla(contract_id: int, sla_json: str):
     )
     conn.commit()
     conn.close()
-    
+def create_sla_table():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS sla_extractions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            contract_id INTEGER,
+            sla_json TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (contract_id) REFERENCES contracts(id)
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+
+def save_sla(contract_id: int, sla_json: str):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO sla_extractions (contract_id, sla_json) VALUES (?, ?)",
+        (contract_id, sla_json)
+    )
+    conn.commit()
+    conn.close()
