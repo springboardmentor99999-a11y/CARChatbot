@@ -1,60 +1,157 @@
-import os
-import json
-from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
+import re
 
-# Load .env explicitly from backend directory
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
+# ---------------- HELPER FUNCTIONS ---------------- #
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+def clean_text(text: str) -> str:
+    """Normalize text for regex matching"""
+    text = text.replace(",", "")
+    text = re.sub(r"\s+", " ", text)
+    return text
 
-if not OPENAI_API_KEY:
-    raise RuntimeError("OPENAI_API_KEY not found in backend/.env")
+def extract_amount(patterns, text):
+    """Try multiple regex patterns and return first match"""
+    for pattern in patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            return match.group(1)
+    return None
 
-# Initialize LLM
-llm = ChatOpenAI(
-    model="gpt-4o-mini",
-    temperature=0,
-    api_key=OPENAI_API_KEY
-)
+# ---------------- MAIN ANALYZER ---------------- #
 
-# SLA Schema
-SLA_SCHEMA = {
-    "loan_type": None,
-    "apr_percent": None,
-    "monthly_payment": None,
-    "term_months": None,
-    "down_payment": None,
-    "finance_amount": None,
-    "fees": {
-        "documentation_fee": None,
-        "acquisition_fee": None,
-        "registration_fee": None,
-        "other_fees": None
-    },
-    "penalties": {
-        "late_payment": None,
-        "early_termination": None,
-        "over_mileage": None
-    },
-    "red_flags": [],
-    "negotiation_points": []
-}
+def analyze_contract(contract_text: str) -> dict:
+    if not contract_text or len(contract_text) < 50:
+        raise ValueError("Contract text too short")
 
-def analyze_contract(text: str):
-    prompt = f"""
-You are an expert car loan and lease contract analyst.
+    text = clean_text(contract_text)
 
-Extract details strictly in valid JSON matching this schema:
-{json.dumps(SLA_SCHEMA, indent=2)}
+    # ---------------- LOAN / LEASE TYPE ---------------- #
+    if re.search(r"lease", text, re.I):
+        loan_type = "Vehicle Lease"
+    elif re.search(r"loan|finance|emi", text, re.I):
+        loan_type = "Car Loan"
+    else:
+        loan_type = None
 
-Rules:
-- Missing values must be null
-- Do not add extra keys
-- Output ONLY valid JSON
+    # ---------------- APR / INTEREST ---------------- #
+    apr_percent = extract_amount(
+        [
+            r"APR\s*[:\-]?\s*(\d+\.?\d*)%",
+            r"interest\s*rate.*?(\d+\.?\d*)%",
+            r"rate\s+of\s+interest.*?(\d+\.?\d*)%",
+            r"interest\s*@\s*(\d+\.?\d*)%"
+        ],
+        text
+    )
 
-Contract Text:
-{text}
-"""
-    response = llm.invoke(prompt)
-    return response.content
+    # ---------------- MONTHLY PAYMENT / EMI ---------------- #
+    monthly_payment = extract_amount(
+        [
+            r"monthly\s+(payment|installment).*?₹?\s*(\d+)",
+            r"EMI\s*₹?\s*(\d+)",
+            r"instalment\s*₹?\s*(\d+)"
+        ],
+        text
+    )
+
+    # ---------------- TERM / TENURE ---------------- #
+    term_months = extract_amount(
+        [
+            r"(\d+)\s*months",
+            r"tenure\s*[:\-]?\s*(\d+)",
+            r"lease\s+period\s*[:\-]?\s*(\d+)",
+            r"term\s*[:\-]?\s*(\d+)"
+        ],
+        text
+    )
+
+    # ---------------- DOWN PAYMENT ---------------- #
+    down_payment = extract_amount(
+        [
+            r"down\s*payment\s*₹?\s*(\d+)",
+            r"initial\s*payment\s*₹?\s*(\d+)",
+            r"advance\s*₹?\s*(\d+)"
+        ],
+        text
+    )
+
+    # ---------------- FINANCE / LOAN AMOUNT ---------------- #
+    finance_amount = extract_amount(
+        [
+            r"loan\s+amount\s*₹?\s*(\d+)",
+            r"amount\s+financed\s*₹?\s*(\d+)",
+            r"capital\s+cost\s*₹?\s*(\d+)",
+            r"principal\s*amount\s*₹?\s*(\d+)"
+        ],
+        text
+    )
+
+    # ---------------- FEES ---------------- #
+    fees = {
+        "documentation_fee": extract_amount(
+            [r"documentation\s*fee\s*₹?\s*(\d+)"], text
+        ),
+        "registration_fee": extract_amount(
+            [r"registration\s*fee\s*₹?\s*(\d+)"], text
+        ),
+        "acquisition_fee": extract_amount(
+            [r"acquisition\s*fee\s*₹?\s*(\d+)"], text
+        ),
+        "other_fees": extract_amount(
+            [r"processing\s*fee\s*₹?\s*(\d+)"], text
+        )
+    }
+
+    # ---------------- PENALTIES ---------------- #
+    penalties = {
+        "late_payment": extract_amount(
+            [r"late\s*payment.*?₹?\s*(\d+)"], text
+        ),
+        "early_termination": extract_amount(
+            [r"early\s*termination.*?₹?\s*(\d+)"], text
+        ),
+        "over_mileage": extract_amount(
+            [r"over\s*mileage.*?₹?\s*(\d+)"], text
+        )
+    }
+
+    # ---------------- RED FLAGS ---------------- #
+    red_flags = []
+
+    if penalties["early_termination"]:
+        red_flags.append("Early termination penalty present")
+
+    if apr_percent:
+        try:
+            if float(apr_percent) > 12:
+                red_flags.append("High interest rate")
+        except:
+            pass
+
+    if fees["documentation_fee"]:
+        red_flags.append("Additional documentation fee")
+
+    # ---------------- NEGOTIATION POINTS ---------------- #
+    negotiation_points = []
+
+    if fees["documentation_fee"]:
+        negotiation_points.append("Negotiate documentation fee")
+
+    if apr_percent:
+        negotiation_points.append("Ask for lower interest rate")
+
+    if penalties["early_termination"]:
+        negotiation_points.append("Reduce early termination penalty")
+
+    # ---------------- FINAL JSON ---------------- #
+    return {
+        "loan_type": loan_type,
+        "apr_percent": apr_percent,
+        "monthly_payment": monthly_payment,
+        "term_months": term_months,
+        "down_payment": down_payment,
+        "finance_amount": finance_amount,
+        "fees": fees,
+        "penalties": penalties,
+        "red_flags": red_flags,
+        "negotiation_points": negotiation_points
+    }
