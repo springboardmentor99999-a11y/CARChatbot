@@ -80,17 +80,3 @@ def save_sla(contract_id: int, sla_json: str):
     )
     conn.commit()
     conn.close()
-
-def create_sla_table():
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS sla_extractions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            contract_id INTEGER,
-            sla_json TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    conn.commit()
-    conn.close()
