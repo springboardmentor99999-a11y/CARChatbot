@@ -1,13 +1,18 @@
 import pdfplumber
+from io import BytesIO
 
-def extract_text_from_pdf(pdf_path: str) -> str:
-    text = []
+def extract_text_from_pdf(pdf_bytes: bytes) -> str:
+    text = ""
 
-    with pdfplumber.open(pdf_path) as pdf:
-        for page_number, page in enumerate(pdf.pages, start=1):
+    with pdfplumber.open(BytesIO(pdf_bytes)) as pdf:
+        for page in pdf.pages:
             page_text = page.extract_text()
             if page_text:
-                text.append(f"\n--- Page {page_number} ---\n")
-                text.append(page_text)
+                text += page_text
 
-    return "\n".join(text)
+    if not text.strip():
+        raise ValueError(
+            "Scanned PDFs are not supported. Please upload a digital (text-based) PDF."
+        )
+
+    return text
