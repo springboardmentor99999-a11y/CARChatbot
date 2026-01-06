@@ -1,18 +1,22 @@
-from fastapi import FastAPI, UploadFile
-from backend.db import save_contract, save_sla
+from fastapi import FastAPI, UploadFile, File, HTTPException
+from backend.db import save_contract, save_sla, create_contracts_table, create_sla_table
 from backend.pdf_reader import extract_text_from_pdf
 from backend.contract_analyzer import analyze_contract
-import json
 import traceback
 
 app = FastAPI()
+
+@app.on_event("startup")
+def startup():
+    #create_contracts_table()
+    create_sla_table()
 
 @app.get("/")
 def home():
     return {"message": "API is running"}
 
 @app.post("/analyze")
-async def analyze_contract_api(file: UploadFile):
+async def analyze_contract_api(file: UploadFile = File(...)):
     try:
         print("🚀 API HIT")
         print("📄 File:", file.filename)
@@ -23,15 +27,12 @@ async def analyze_contract_api(file: UploadFile):
         print("📝 Text length:", len(text))
 
         if not text.strip():
-            return {"error": "No readable text extracted from PDF"}
+            raise HTTPException(status_code=400, detail="No readable text extracted")
 
-        contract_id = save_contract(file.filename, text)
-        print("💾 Contract saved:", contract_id)
+        contract_id = save_contract(text)
 
         sla = analyze_contract(text)
-        print("🤖 SLA:", sla)
-
-        save_sla(contract_id, json.dumps(sla))
+        save_sla(contract_id, sla)
 
         return {
             "contract_id": contract_id,
@@ -39,6 +40,5 @@ async def analyze_contract_api(file: UploadFile):
         }
 
     except Exception as e:
-        print("❌ ERROR")
         traceback.print_exc()
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
