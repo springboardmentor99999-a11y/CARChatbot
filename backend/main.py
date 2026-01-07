@@ -14,23 +14,14 @@ def home():
 @app.post("/analyze")
 async def analyze_contract_api(file: UploadFile):
     try:
-        print("🚀 API HIT")
-        print("📄 File:", file.filename)
-
         pdf_bytes = await file.read()
         text = extract_text_from_pdf(pdf_bytes)
 
-        print("📝 Text length:", len(text))
-
         if not text.strip():
-            return {"error": "No readable text extracted from PDF"}
+            return {"error": "No readable text extracted"}
 
         contract_id = save_contract(file.filename, text)
-        print("💾 Contract saved:", contract_id)
-
         sla = analyze_contract(text)
-        print("🤖 SLA:", sla)
-
         save_sla(contract_id, json.dumps(sla))
 
         return {
@@ -39,6 +30,5 @@ async def analyze_contract_api(file: UploadFile):
         }
 
     except Exception as e:
-        print("❌ ERROR")
         traceback.print_exc()
         return {"error": str(e)}
