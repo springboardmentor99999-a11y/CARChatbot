@@ -1,59 +1,6 @@
-import os
-import json
-from dotenv import load_dotenv
-
-load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
-
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-SLA_SCHEMA = {
-    "loan_type": None,
-    "apr_percent": None,
-    "monthly_payment": None,
-    "term_months": None,
-    "down_payment": None,
-    "finance_amount": None,
-    "fees": {},
-    "penalties": {},
-    "red_flags": [],
-    "negotiation_points": []
-}
-
-def analyze_contract(text: str):
-    """
-    MOCK SLA extraction for demo & interviews
-    """
-
-    return {
-        "loan_type": "Lease",
-        "apr_percent": 8.5,
-        "monthly_payment": 14500,
-        "term_months": 36,
-        "down_payment": 50000,
-        "finance_amount": 780000,
-        "fees": {
-            "documentation_fee": 2500,
-            "acquisition_fee": 3000,
-            "registration_fee": 1800,
-            "other_fees": 0
-        },
-        "penalties": {
-            "late_payment": "₹500 per delay",
-            "early_termination": "₹25,000",
-            "over_mileage": "₹10/km"
-        },
-        "red_flags": [
-            "High early termination penalty"
-        ],
-        "negotiation_points": [
-            "Reduce documentation fee",
-            "Lower APR"
-        ]
-    }
-
 import re
 from datetime import datetime
-
+from backend.vin_service import get_vehicle_details
 # ---------------- HELPER FUNCTIONS ---------------- #
 
 def clean_text(text: str) -> str:
@@ -82,6 +29,13 @@ def calculate_term_from_dates(text):
         return (end.year - start.year) * 12 + (end.month - start.month)
     return None
 
+def extract_vin(text: str) -> str | None:
+    """
+    Extract VIN (17-character alphanumeric, excluding I,O,Q)
+    """
+    vin_pattern = r"\b[A-HJ-NPR-Z0-9]{17}\b"
+    match = re.search(vin_pattern, text)
+    return match.group(0) if match else None
 
 # ---------------- MAIN ANALYZER ---------------- #
 
@@ -109,7 +63,6 @@ def analyze_contract(contract_text: str) -> dict:
         ],
         text
     )
-
     # ---------------- MONTHLY PAYMENT ---------------- #
     monthly_payment = extract_amount(
         [
@@ -170,6 +123,7 @@ def analyze_contract(contract_text: str) -> dict:
         )
     }
 
+
     # ---------------- PENALTIES ---------------- #
     penalties = {
         "late_payment": extract_amount(
@@ -184,17 +138,44 @@ def analyze_contract(contract_text: str) -> dict:
             [r"over\s*mileage.*?₹?\s*(\d+)"], text
         )
     }
-
     # ---------------- RED FLAGS ---------------- #
     red_flags = []
 
     if penalties["early_termination"] and penalties["early_termination"] != "No penalty":
         red_flags.append("Early termination penalty present")
 
+    if apr_percent:
+        try:
+            if float(apr_percent) > 12:
+                red_flags.append("High interest rate")
+        except:
+            pass
 
-#-----------------------FINAL .JSON------------------
+    # ---------------- NEGOTIATION POINTS ---------------- #
+    negotiation_points = []
 
+    if apr_percent:
+        negotiation_points.append("Ask for lower interest rate")
+
+    if fees["documentation_fee"]:
+        negotiation_points.append("Negotiate documentation fee")
+
+    if penalties["early_termination"] != "No penalty":
+        negotiation_points.append("Reduce early termination penalty")
+    
+    #------------VIN EXTRACTION--------------#
+    vin = extract_vin(text)
+    vehicle_details = {}
+    if vin:
+        try:
+            vehicle_details = get_vehicle_details(vin)
+        except Exception:
+            vehicle_details = {}
+
+    # ---------------- FINAL JSON ---------------- #
     return {
+    "vin": vin,
+    "vehicle_details": vehicle_details,
     "loan_type": loan_type,
     "apr_percent": apr_percent,
     "monthly_payment": monthly_payment,
