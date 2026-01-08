@@ -1,10 +1,13 @@
+# pytesseract.pytesseract.tesseract_cmd = r"D:\tesseract\tesseract.exe"
+# pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
 from pdfminer.high_level import extract_text
 from pdf2image import convert_from_bytes
 import pytesseract
 import io
 
 # 👇 EXPLICIT TESSERACT PATH (NO ENV REQUIRED)
-pytesseract.pytesseract.tesseract_cmd = r"D:\tesseract\tesseract.exe"
+pytesseract.pytesseract.tesseract_cmd = r"D:\Tesseract-OCR\tesseract.exe"
 
 def extract_text_from_pdf(pdf_bytes: bytes) -> str:
     """
@@ -30,15 +33,3 @@ def extract_text_from_pdf(pdf_bytes: bytes) -> str:
     except Exception as e:
         print("OCR FAILED:", e)
         return ""
-    
-# from pdfminer.high_level import extract_text
-# from io import BytesIO
-
-# def extract_text_from_pdf(pdf_bytes: bytes) -> str:
-#     try:
-#         with BytesIO(pdf_bytes) as pdf_file:
-#             text = extract_text(pdf_file)
-#             return text or ""
-#     except Exception as e:
-#         print("PDF extraction error:", e)
-#         return ""
