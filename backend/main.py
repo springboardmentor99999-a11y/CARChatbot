@@ -1,34 +1,34 @@
 from fastapi import FastAPI, UploadFile
+from backend.db import save_contract, save_sla
 from backend.pdf_reader import extract_text_from_pdf
 from backend.contract_analyzer import analyze_contract
-from backend.db import save_contract
+import json
+import traceback
 
-app = FastAPI()   # ✅ THIS LINE IS REQUIRED
+app = FastAPI()
 
-# ---------- API MODE ----------
 @app.get("/")
 def home():
     return {"message": "API is running"}
 
 @app.post("/analyze")
 async def analyze_contract_api(file: UploadFile):
-    pdf_bytes = await file.read()
-    text = extract_text_from_pdf(pdf_bytes)
-    save_contract(file.filename, text)
-    result = analyze_contract(text)
-    return {"analysis": result}
+    try:
+        pdf_bytes = await file.read()
+        text = extract_text_from_pdf(pdf_bytes)
 
-# ---------- SCRIPT MODE ----------
-def ingest_pdf(pdf_path: str):
-    print("📄 Extracting PDF text...")
-    text = extract_text_from_pdf(pdf_path)
+        if not text.strip():
+            return {"error": "No readable text extracted"}
 
-    print("💾 Saving to database...")
-    save_contract(pdf_path, text)
+        contract_id = save_contract(file.filename, text)
+        sla = analyze_contract(text)
+        save_sla(contract_id, json.dumps(sla))
 
-    print("📊 ANALYZED CONTRACT DATA")
-    result = analyze_contract(text)
-    print(result)
+        return {
+            "contract_id": contract_id,
+            "sla": sla
+        }
 
-if __name__ == "__main__":
-    ingest_pdf("samples/sample_contract.pdf")
+    except Exception as e:
+        traceback.print_exc()
+        return {"error": str(e)}
