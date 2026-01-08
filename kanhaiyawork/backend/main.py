@@ -1,22 +1,34 @@
-from pdfReader import extract_text_from_pdf
-from db import save_contract
-from contractAnalyzer import analyze_contract
+from fastapi import FastAPI, UploadFile
+from backend.db import save_contract, save_sla
+from backend.pdf_reader import extract_text_from_pdf
+from backend.contract_analyzer import analyze_contract
+import json
+import traceback
 
+app = FastAPI()
 
-def ingest_pdf(pdf_filename: str):
-    print("Extracting PDF text...")
-    text = extract_text_from_pdf(f"samples/{pdf_filename}")
+@app.get("/")
+def home():
+    return {"message": "API is running"}
 
-    print("Saving to database...")
-    save_contract(pdf_filename, text)
+@app.post("/analyze")
+async def analyze_contract_api(file: UploadFile):
+    try:
+        pdf_bytes = await file.read()
+        text = extract_text_from_pdf(pdf_bytes)
 
-    print("Analyzing contract...")
-    result = analyze_contract(text)
+        if not text.strip():
+            return {"error": "No readable text extracted"}
 
-    print("\nANALYZED CONTRACT DATA")
-    for key, value in result.items():
-        print(f"{key}: {value}")
+        contract_id = save_contract(file.filename, text)
+        sla = analyze_contract(text)
+        save_sla(contract_id, json.dumps(sla))
 
+        return {
+            "contract_id": contract_id,
+            "sla": sla
+        }
 
-if __name__ == "__main__":
-    ingest_pdf("Vehicle_Loan_Cum_Hypothecation_1.pdf")
+    except Exception as e:
+        traceback.print_exc()
+        return {"error": str(e)}
