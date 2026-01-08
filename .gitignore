@@ -30,8 +30,10 @@ datasets/
 
 # Environment variables
 .env
-.vscode/
 
 # System files
 .DS_Store
 Thumbs.db
+
+# *.db
+/.vscode/
