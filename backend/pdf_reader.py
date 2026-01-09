@@ -4,7 +4,7 @@ import pytesseract
 import io
 
 # 👇 EXPLICIT TESSERACT PATH (NO ENV REQUIRED)
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
 
 def extract_text_from_pdf(pdf_bytes: bytes) -> str:
     """
@@ -30,3 +30,4 @@ def extract_text_from_pdf(pdf_bytes: bytes) -> str:
     except Exception as e:
         print("OCR FAILED:", e)
         return ""
+    
