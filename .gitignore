@@ -1,6 +1,37 @@
-# Ignore env files
-.env
-backend/.env
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
-# Ignore virtual environment
+# Virtual environments
+venv/
+env/
 .venv/
+*.env
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# Model files
+*.h5
+*.pkl
+*.joblib
+*.pt
+*.onnx
+
+# Data folders
+data/
+datasets/
+
+# Environment variables
+.env
+
+# System files
+.DS_Store
+Thumbs.db
+
+*.HOW_TO_RUN.md
