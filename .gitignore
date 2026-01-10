@@ -33,3 +33,5 @@ datasets/
 # System files
 .DS_Store
 Thumbs.db
+
+*.HOW_TO_RUN.md
