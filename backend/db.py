@@ -29,19 +29,17 @@ def create_contracts_table():
     conn.close()
 
 
-def save_contract(contract_text: str) -> int:
+def save_contract(file_name: str, raw_text: str) -> int:
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO contracts (contract_text) VALUES (?)",
-        (contract_text,)
+        "INSERT INTO contracts (file_name, raw_text) VALUES (?, ?)",
+        (file_name, raw_text)
     )
     contract_id = cursor.lastrowid
     conn.commit()
     conn.close()
     return contract_id
-
-
 
 
 # ---------------- SLA TABLE ---------------- #
