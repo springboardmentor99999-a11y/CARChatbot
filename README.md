@@ -26,7 +26,7 @@ All interns must work ONLY inside their assigned branch.
 
 Example branch names:
 
-khushisu192-branch
+kishor7777-branch
 
 harshithboyina-branch
 
