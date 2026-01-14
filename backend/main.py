@@ -1,50 +1,95 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
-import os
-import shutil
+from fastapi import FastAPI, UploadFile, File
+import traceback
+
+from backend.db import save_contract, save_sla
 from backend.pdf_reader import extract_text_from_pdf
+from backend.contract_analyzer import analyze_contract, merge_rule_and_llm
+from backend.llm_sla_extractor import extract_sla_with_llm
+from backend.vin_service import get_vehicle_details
 
-app = FastAPI(title="Contract Analyzer API")
+app = FastAPI(
+    title="Car Lease / Loan Contract Review API",
+    version="1.0",
+    description="AI-powered contract analysis and negotiation assistant"
+)
 
-UPLOAD_DIR = "uploads"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-
+# ---------------- BASIC ENDPOINTS ---------------- #
 
 @app.get("/")
 def home():
-    return {"message": "Contract Analyzer API running"}
+    return {"message": "Car Loan / Lease AI API is running"}
 
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
+# ---------------- CONTRACT ANALYSIS ---------------- #
 
 @app.post("/analyze")
-async def analyze_contract(file: UploadFile = File(...)):
+async def analyze_contract_api(file: UploadFile = File(...)):
+    """
+    Upload a car lease / loan contract PDF and receive:
+    - Structured SLA extraction
+    - AI-assisted interpretation
+    """
+
     try:
-        # 1. Validate file type
+        # 1️⃣ Validate file type
         if file.content_type != "application/pdf":
-            raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+            return {"error": "Only PDF files are supported"}
 
-        # 2. Save file safely
-        file_path = os.path.join(UPLOAD_DIR, file.filename)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        pdf_bytes = await file.read()
 
-        # 3. Extract text
-        text = extract_text_from_pdf(file_path)
+        # 2️⃣ Validate file size (10 MB limit)
+        if len(pdf_bytes) > 10 * 1024 * 1024:
+            return {"error": "File too large (maximum 10MB allowed)"}
 
-        if not text.strip():
-            raise HTTPException(status_code=400, detail="No text extracted from PDF")
+        # 3️⃣ Extract text (digital PDF → OCR fallback)
+        contract_text = extract_text_from_pdf(pdf_bytes)
 
-        # 4. (Temporary) return preview
+        if not contract_text or not contract_text.strip():
+            return {"error": "No readable text could be extracted from the PDF"}
+
+        # 4️⃣ Save raw contract text
+        contract_id = save_contract(file.filename, contract_text)
+
+        # 5️⃣ Rule-based SLA extraction (high precision)
+        rule_sla = analyze_contract(contract_text)
+
+        # 6️⃣ LLM-based SLA extraction (coverage & flexibility)
+        llm_sla = extract_sla_with_llm(contract_text)
+
+        # 7️⃣ Merge rule + LLM output safely
+        final_sla = merge_rule_and_llm(rule_sla, llm_sla)
+
+        # 8️⃣ Store final SLA JSON
+        save_sla(contract_id, final_sla)
+
+        # 9️⃣ API response
         return {
-            "filename": file.filename,
-            "text_length": len(text),
-            "preview": text[:1000]
+            "contract_id": contract_id,
+            "sla": final_sla
         }
 
-    except HTTPException:
-        raise
+    except Exception:
+        traceback.print_exc()
+        return {
+            "error": "Internal server error during contract analysis"
+        }
 
-    except Exception as e:
-        print("ANALYZE ERROR:", str(e))
-        raise HTTPException(status_code=500, detail=str(e))
 
-    finally:
-        file.file.close()
+# ---------------- VIN LOOKUP ---------------- #
+
+@app.get("/vin/{vin}")
+def vin_lookup(vin: str):
+    """
+    Decode VIN and fetch basic vehicle information
+    using public NHTSA API
+    """
+    try:
+        return get_vehicle_details(vin)
+    except Exception:
+        traceback.print_exc()
+        return {"error": "VIN lookup failed"}

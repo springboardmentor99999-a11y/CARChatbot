@@ -6,3 +6,5 @@ python-dotenv
 langchain-openai
 openai
 python-multipart
+pytesseract
+pdf2image
