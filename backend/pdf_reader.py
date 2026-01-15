@@ -1,32 +1,32 @@
-import pdfplumber
-import os
-from io import BytesIO
+from pdfminer.high_level import extract_text
+from pdf2image import convert_from_bytes
+import pytesseract
+import io
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SAMPLES_DIR = os.path.join(BASE_DIR, "samples")
+# 👇 EXPLICIT TESSERACT PATH (NO ENV REQUIRED)
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
-def extract_text_from_pdf(input) -> str:
-    if isinstance(input, str):
-        # Assume it's a filename
-        pdf_path = os.path.join(SAMPLES_DIR, input)
-        with pdfplumber.open(pdf_path) as pdf:
-            text = []
-            for i, page in enumerate(pdf.pages, start=1):
-                page_text = page.extract_text()
-                if page_text:
-                    text.append(f"\n--- Page {i} ---\n")
-                    text.append(page_text)
-            return "\n".join(text)
-    elif isinstance(input, bytes):
-        # Assume it's PDF bytes
-        pdf_file = BytesIO(input)
-        with pdfplumber.open(pdf_file) as pdf:
-            text = []
-            for i, page in enumerate(pdf.pages, start=1):
-                page_text = page.extract_text()
-                if page_text:
-                    text.append(f"\n--- Page {i} ---\n")
-                    text.append(page_text)
-            return "\n".join(text)
-    else:
-        raise ValueError("Input must be a filename (str) or PDF bytes")
+def extract_text_from_pdf(pdf_bytes: bytes) -> str:
+    """
+    1. Try normal text extraction (digital PDFs)
+    2. If empty → fallback to OCR (scanned PDFs)
+    """
+
+    # 1️⃣ Try pdfminer first
+    try:
+        text = extract_text(io.BytesIO(pdf_bytes))
+        if text and text.strip():
+            return text
+    except Exception:
+        pass
+
+    # 2️⃣ OCR fallback (scanned PDFs)
+    try:
+        images = convert_from_bytes(pdf_bytes)
+        ocr_text = ""
+        for img in images:
+            ocr_text += pytesseract.image_to_string(img)
+        return ocr_text
+    except Exception as e:
+        print("OCR FAILED:", e)
+        return ""
