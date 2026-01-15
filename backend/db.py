@@ -58,3 +58,14 @@ def create_sla_table():
     """)
     conn.commit()
     conn.close()
+
+
+def save_sla(contract_id: int, sla_data: dict):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO sla_extractions (contract_id, sla_json) VALUES (?, ?)",
+        (contract_id, json.dumps(sla_data))
+    )
+    conn.commit()
+    conn.close()
