@@ -1,6 +1,7 @@
-import re
+﻿import re
 from datetime import datetime
 from backend.vin_service import get_vehicle_details
+
 
 # ---------------- HELPER FUNCTIONS ---------------- #
 
@@ -31,10 +32,7 @@ def calculate_term_from_dates(text):
     return None
 
 
-def extract_vin(text: str) -> str | None:
-    """
-    Extract VIN (17-character alphanumeric, excluding I,O,Q)
-    """
+def extract_vin(text: str):
     vin_pattern = r"\b[A-HJ-NPR-Z0-9]{17}\b"
     match = re.search(vin_pattern, text)
     return match.group(0) if match else None
@@ -72,8 +70,8 @@ def analyze_contract(contract_text: str) -> dict:
         [
             r"monthly payment of\s*Rs\.?\s*(\d+)",
             r"monthly payment\s*Rs\.?\s*(\d+)",
-            r"EMI\s*₹?\s*(\d+)",
-            r"monthly\s+installment\s*₹?\s*(\d+)"
+            r"EMI\s*(\d+)",
+            r"monthly\s+installment\s*(\d+)"
         ],
         text
     )
@@ -93,9 +91,9 @@ def analyze_contract(contract_text: str) -> dict:
     # ---------------- DOWN PAYMENT ---------------- #
     down_payment = extract_amount(
         [
-            r"down\s*payment\s*₹?\s*(\d+)",
-            r"initial\s+payment\s*₹?\s*(\d+)",
-            r"advance\s*₹?\s*(\d+)"
+            r"down\s*payment\s*(\d+)",
+            r"initial\s+payment\s*(\d+)",
+            r"advance\s*(\d+)"
         ],
         text
     )
@@ -105,8 +103,8 @@ def analyze_contract(contract_text: str) -> dict:
         [
             r"Loan Amount:\s*Rs\.?\s*(\d+)",
             r"loan amount\s*Rs\.?\s*(\d+)",
-            r"amount\s+financed\s*₹?\s*(\d+)",
-            r"principal\s+amount\s*₹?\s*(\d+)"
+            r"amount\s+financed\s*(\d+)",
+            r"principal\s+amount\s*(\d+)"
         ],
         text
     )
@@ -114,31 +112,31 @@ def analyze_contract(contract_text: str) -> dict:
     # ---------------- FEES ---------------- #
     fees = {
         "documentation_fee": extract_amount(
-            [r"documentation\s*fee\s*₹?\s*(\d+)"], text
+            [r"documentation\s*fee\s*(\d+)"], text
         ),
         "registration_fee": extract_amount(
-            [r"registration\s*fee\s*₹?\s*(\d+)"], text
+            [r"registration\s*fee\s*(\d+)"], text
         ),
         "acquisition_fee": extract_amount(
-            [r"acquisition\s*fee\s*₹?\s*(\d+)"], text
+            [r"acquisition\s*fee\s*(\d+)"], text
         ),
         "other_fees": extract_amount(
-            [r"processing\s*fee\s*₹?\s*(\d+)"], text
+            [r"processing\s*fee\s*(\d+)"], text
         )
     }
 
     # ---------------- PENALTIES ---------------- #
     penalties = {
         "late_payment": extract_amount(
-            [r"late\s*payment.*?₹?\s*(\d+)"], text
+            [r"late\s*payment.*?(\d+)"], text
         ),
         "early_termination": "No penalty"
         if re.search(r"without penalty", text, re.I)
         else extract_amount(
-            [r"early\s*termination.*?₹?\s*(\d+)"], text
+            [r"early\s*termination.*?(\d+)"], text
         ),
         "over_mileage": extract_amount(
-            [r"over\s*mileage.*?₹?\s*(\d+)"], text
+            [r"over\s*mileage.*?(\d+)"], text
         )
     }
 

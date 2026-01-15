@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile
+﻿from fastapi import FastAPI, UploadFile
 from backend.db import save_contract, save_sla
 from backend.pdf_reader import extract_text_from_pdf
 from backend.contract_analyzer import analyze_contract

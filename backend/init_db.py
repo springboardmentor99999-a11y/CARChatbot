@@ -1,4 +1,4 @@
-from db import create_contracts_table, create_sla_table
+﻿from db import create_contracts_table, create_sla_table
 
 create_contracts_table()
 create_sla_table()
