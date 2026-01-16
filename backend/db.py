@@ -1,3 +1,5 @@
+
+# backend/db.py
 import sqlite3
 import os
 import json
@@ -40,6 +42,18 @@ def save_contract(file_name: str, raw_text: str) -> int:
     conn.commit()
     conn.close()
     return contract_id
+
+
+def get_contract_text(contract_id: int) -> str | None:
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT raw_text FROM contracts WHERE id = ?",
+        (contract_id,)
+    )
+    row = cursor.fetchone()
+    conn.close()
+    return row[0] if row else None
 
 
 # ---------------- SLA TABLE ---------------- #
