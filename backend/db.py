@@ -69,3 +69,16 @@ def save_sla(contract_id: int, sla_data: dict):
     )
     conn.commit()
     conn.close()
+    
+#-----------Read Contract-------------
+
+def get_contract_text(contract_id : int):
+    conn = get_connection()
+    cursor = conn.cursor
+    cursor.execute(
+        "SELECT raw_text FROM contracts WHERE id = ?",
+        (contract_id,)
+    )
+    row = cursor.fetchone()
+    conn.close()
+    return row[0] if row else None
