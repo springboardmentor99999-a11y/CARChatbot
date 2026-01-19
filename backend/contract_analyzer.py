@@ -1,5 +1,7 @@
 import re
 from datetime import datetime
+from backend.sla_schema import SLA_SCHEMA
+from backend.vin_service import get_vehicle_details
 
 
 def clean_text(text: str) -> str:
@@ -32,90 +34,96 @@ def calculate_term_from_dates(text):
     return None
 
 
+def extract_vin(text: str):
+    vin_pattern = r"\b[A-HJ-NPR-Z0-9]{17}\b"
+    match = re.search(vin_pattern, text)
+    return match.group(0) if match else None
+
+
 def analyze_contract(contract_text: str) -> dict:
     if not contract_text or len(contract_text) < 50:
         raise ValueError("Contract text too short")
 
     text = clean_text(contract_text)
 
-    loan_type = (
-        "Vehicle Lease" if re.search(r"lease", text, re.I)
-        else "Car Loan" if re.search(r"loan|finance|emi", text, re.I)
-        else None
-    )
+    # ✅ SLA schema format
+    sla = {k: SLA_SCHEMA[k] for k in SLA_SCHEMA}
 
-    apr_percent = extract_amount(
-        [r"APR.?(\d+\.?\d)%", r"interest.?(\d+\.?\d)%"],
+    # contract_type
+    if re.search(r"lease", text, re.I):
+        sla["contract_type"] = "Vehicle Lease"
+    elif re.search(r"loan|finance|emi", text, re.I):
+        sla["contract_type"] = "Car Loan"
+
+    # interest_rate_apr
+    sla["interest_rate_apr"] = extract_amount(
+        [r"APR.*?(\d+\.?\d*)%", r"interest.*?(\d+\.?\d*)%"],
         text,
         float
     )
 
-    monthly_payment = extract_amount(
-        [r"monthly.?₹?\s([\d]+)", r"EMI.?₹?\s([\d]+)"],
+    # monthly_payment
+    sla["monthly_payment"] = extract_amount(
+        [r"monthly.*?₹?\s*([\d]+)", r"EMI.*?₹?\s*([\d]+)"],
         text,
         int
     )
 
-    term_months = extract_amount(
+    # lease_term_months
+    sla["lease_term_months"] = extract_amount(
         [r"(?:tenure|loan term|lease term).*?(\d+)\s*months"],
         text,
         int
     ) or calculate_term_from_dates(text)
 
-    down_payment = extract_amount(
-        [r"down payment.?₹?\s([\d]+)"],
+    # down_payment
+    sla["down_payment"] = extract_amount(
+        [r"down payment.*?₹?\s*([\d]+)"],
         text,
         int
     )
 
-    finance_amount = extract_amount(
-        [r"loan amount.?₹?\s([\d]+)", r"amount financed.?₹?\s([\d]+)"],
+    # late_payment_penalty
+    sla["late_payment_penalty"] = extract_amount(
+        [r"late payment.*?₹?\s*([\d]+)"],
         text,
         int
     )
 
-    fees = {
-        "documentation_fee": extract_amount([r"documentation fee.?₹?\s([\d]+)"], text, int),
-        "registration_fee": extract_amount([r"registration fee.?₹?\s([\d]+)"], text, int),
-        "processing_fee": extract_amount([r"processing fee.?₹?\s([\d]+)"], text, int)
-    }
+    # early_termination_clause
+    if re.search(r"without penalty", text, re.I):
+        sla["early_termination_clause"] = "No penalty"
+    elif re.search(r"early termination", text, re.I):
+        sla["early_termination_clause"] = "Present"
+    else:
+        sla["early_termination_clause"] = None
 
-    early_term = extract_amount([r"early termination.?₹?\s([\d]+)"], text, int)
-
-    penalties = {
-        "late_payment": extract_amount([r"late payment.?₹?\s([\d]+)"], text, int),
-        "early_termination": (
-            "No penalty" if re.search(r"without penalty", text, re.I)
-            else early_term if early_term else "Not specified"
-        ),
-        "over_mileage": extract_amount([r"over mileage.?₹?\s([\d]+)"], text, int)
-    }
-
+    # red_flags
     red_flags = []
-    if apr_percent and apr_percent > 12:
+    if sla["interest_rate_apr"] and sla["interest_rate_apr"] > 12:
         red_flags.append("High interest rate")
 
-    if penalties["early_termination"] not in ["No penalty", "Not specified"]:
-        red_flags.append("Early termination penalty present")
+    if sla["early_termination_clause"] not in [None, "No penalty"]:
+        red_flags.append("Early termination clause present")
 
-    negotiation_points = []
-    if apr_percent:
-        negotiation_points.append("Ask for lower interest rate")
-    if fees["documentation_fee"]:
-        negotiation_points.append("Negotiate documentation fee")
+    sla["red_flags"] = red_flags
+
+    # ✅ VIN extraction + details
+    vin = extract_vin(text)
+    vehicle_details = {}
+    if vin:
+        try:
+            vehicle_details = get_vehicle_details(vin)
+        except:
+            vehicle_details = {}
 
     return {
-        "loan_type": loan_type,
-        "apr_percent": apr_percent,
-        "monthly_payment": monthly_payment,
-        "term_months": term_months,
-        "down_payment": down_payment,
-        "finance_amount": finance_amount,
-        "fees": fees,
-        "penalties": penalties,
-        "red_flags": red_flags,
-        "negotiation_points": negotiation_points
+        "vin": vin,
+        "vehicle_details": vehicle_details,
+        "sla": sla
     }
+
+
 def merge_rule_and_llm(rule_sla: dict, llm_sla: dict) -> dict:
     final = rule_sla.copy()
     for key, value in llm_sla.items():
