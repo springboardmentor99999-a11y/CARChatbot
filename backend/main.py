@@ -1,11 +1,12 @@
+
 from fastapi import FastAPI, UploadFile, File
 import traceback
 
 from backend.db import save_contract, save_sla
 from backend.pdf_reader import extract_text_from_pdf
-from backend.contract_analyzer import analyze_contract, merge_rule_and_llm
-from backend.llm_sla_extractor import extract_sla_with_llm
+from backend.contract_analyzer import analyze_contract
 from backend.vin_service import get_vehicle_details
+from backend.fairness_engine import calculate_fairness_score
 
 app = FastAPI(
     title="Car Lease / Loan Contract Review API",
@@ -54,23 +55,23 @@ async def analyze_contract_api(file: UploadFile = File(...)):
 
         # 4️⃣ Save raw contract text
         contract_id = save_contract(file.filename, contract_text)
+        # 5️⃣ Rule-based SLA extraction
+        final_sla = analyze_contract(contract_text)
 
-        # 5️⃣ Rule-based SLA extraction (high precision)
-        rule_sla = analyze_contract(contract_text)
+        # 6️⃣ Calculate fairness score
+        fairness = calculate_fairness_score(final_sla)
 
-        # 6️⃣ LLM-based SLA extraction (coverage & flexibility)
-        llm_sla = extract_sla_with_llm(contract_text)
+        # 7️⃣ Store SLA + fairness together
+        save_sla(contract_id, {
+           "sla": final_sla,
+        "fairness": fairness
+        })
 
-        # 7️⃣ Merge rule + LLM output safely
-        final_sla = merge_rule_and_llm(rule_sla, llm_sla)
-
-        # 8️⃣ Store final SLA JSON
-        save_sla(contract_id, final_sla)
-
-        # 9️⃣ API response
+        # 8️⃣ API response
         return {
-            "contract_id": contract_id,
-            "sla": final_sla
+         "contract_id": contract_id,
+         "sla": final_sla,
+         "fairness": fairness
         }
 
     except Exception:

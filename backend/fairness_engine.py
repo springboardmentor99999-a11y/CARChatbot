@@ -1,6 +1,6 @@
 def calculate_fairness_score(sla: dict) -> dict:
     """
-    Calculate a fairness score (0 – 100) for a car lease/loan contract
+    Calculate a fairness score (0–100) for a car lease/loan contract
     based on extracted SLA fields.
     """
 

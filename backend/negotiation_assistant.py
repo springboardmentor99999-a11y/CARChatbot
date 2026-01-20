@@ -1,3 +1,4 @@
+
 def generate_negotiation_points(sla: dict, fairness: dict) -> list:
     """
     Generate negotiation suggestions based on SLA and fairness score.
