@@ -1,7 +1,7 @@
 import os
 import openai
 import json
-from sla_schema import SLA_SCHEMA
+from backend.sla_schema import SLA_SCHEMA
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
