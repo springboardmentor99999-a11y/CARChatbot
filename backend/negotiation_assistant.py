@@ -38,4 +38,5 @@ def generate_negotiation_points(sla: dict, fairness: dict) -> list:
             "This contract appears fair, but you may still ask for small concessions."
         )
 
-    return points
+  return points
+    
