@@ -1,6 +1,4 @@
-from db import create_contracts_table, create_sla_table
+from db import create_contracts_table
 
 create_contracts_table()
-create_sla_table()
-
-print("Database initialized successfully")
+print("Contracts table created successfully")
