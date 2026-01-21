@@ -1,75 +1,95 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-from fastapi import FastAPI, UploadFile
-from .contract_analyser import analyze_contract
-from .pdf_reader import extract_text_from_pdf
+from fastapi import FastAPI, UploadFile, File
+import traceback
 
-
-app = FastAPI()
-
-
-@app.get("/")
-def home():
-    return{"message":"API is running"}
-
-@app.post("/analyze")
-async def analyze_contract_api(file: UploadFile):
-    pdf_bytes = await file.read()
-    text = extract_text_from_pdf(pdf_bytes)
-    result = analyze_contract(text)
-    return {"analysis": result}
-=======
-from pdf_reader import extract_text_from_pdf
-from db import save_contract
-from contract_analyser import analyze_contract
-
-def ingest_pdf(pdf_filename):
-    print("📄 Extracting PDF text...")
-    text = extract_text_from_pdf(f"samples/{pdf_filename}")
-
-    print("💾 Saving to database...")
-    save_contract(pdf_filename, text)
-
-    result = analyze_contract(text)
-    print("📊 ANALYZED CONTRACT DATA")
-    print(result)
-
-if __name__ == "__main__":
-    ingest_pdf("sample_contract.pdf")
->>>>>>> 7170000 (Milestone 2: Backend API.)
-=======
-from fastapi import FastAPI, UploadFile
 from backend.db import save_contract, save_sla
 from backend.pdf_reader import extract_text_from_pdf
 from backend.contract_analyser import analyze_contract
-import json
-import traceback
+from backend.vin_service import get_vehicle_details
+from backend.fairness_engine import calculate_fairness_score
 
-app = FastAPI()
+app = FastAPI(
+    title="Car Lease / Loan Contract Review API",
+    version="1.0",
+    description="AI-powered contract analysis and negotiation assistant"
+)
+
+# ---------------- BASIC ENDPOINTS ---------------- #
 
 @app.get("/")
 def home():
-    return {"message": "API is running"}
+    return {"message": "Car Loan / Lease AI API is running"}
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
+# ---------------- CONTRACT ANALYSIS ---------------- #
 
 @app.post("/analyze")
-async def analyze_contract_api(file: UploadFile):
+async def analyze_contract_api(file: UploadFile = File(...)):
+    """
+    Upload a car lease / loan contract PDF and receive:
+    - Structured SLA extraction
+    - AI-assisted interpretation
+    """
+
     try:
+        # 1️⃣ Validate file type
+        if file.content_type != "application/pdf":
+            return {"error": "Only PDF files are supported"}
+
         pdf_bytes = await file.read()
-        text = extract_text_from_pdf(pdf_bytes)
 
-        if not text.strip():
-            return {"error": "No readable text extracted"}
+        # 2️⃣ Validate file size (10 MB limit)
+        if len(pdf_bytes) > 10 * 1024 * 1024:
+            return {"error": "File too large (maximum 10MB allowed)"}
 
-        contract_id = save_contract(file.filename, text)
-        sla = analyze_contract(text)
-        save_sla(contract_id, json.dumps(sla))
+        # 3️⃣ Extract text (digital PDF → OCR fallback)
+        contract_text = extract_text_from_pdf(pdf_bytes)
 
+        if not contract_text or not contract_text.strip():
+            return {"error": "No readable text could be extracted from the PDF"}
+
+        # 4️⃣ Save raw contract text
+        contract_id = save_contract(file.filename, contract_text)
+        # 5️⃣ Rule-based SLA extraction
+        final_sla = analyze_contract(contract_text)
+
+        # 6️⃣ Calculate fairness score
+        fairness = calculate_fairness_score(final_sla)
+
+        # 7️⃣ Store SLA + fairness together
+        save_sla(contract_id, {
+           "sla": final_sla,
+        "fairness": fairness
+        })
+
+        # 8️⃣ API response
         return {
-            "contract_id": contract_id,
-            "sla": sla
+         "contract_id": contract_id,
+         "sla": final_sla,
+         "fairness": fairness
         }
 
-    except Exception as e:
+    except Exception:
         traceback.print_exc()
-        return {"error": str(e)}
->>>>>>> df82d99 (3rd Milestone is Completed)
+        return {
+            "error": "Internal server error during contract analysis"
+        }
+
+
+# ---------------- VIN LOOKUP ---------------- #
+
+@app.get("/vin/{vin}")
+def vin_lookup(vin: str):
+    """
+    Decode VIN and fetch basic vehicle information
+    using public NHTSA API
+    """
+    try:
+        return get_vehicle_details(vin)
+    except Exception:
+        traceback.print_exc()
+        return {"error": "VIN lookup failed"}
