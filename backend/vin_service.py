@@ -21,4 +21,6 @@ def get_vehicle_details(vin: str) -> dict:
         "body_class": result.get("Body Class"),
         "engine": result.get("Engine Model"),
         "recalls_note": "Check NHTSA recalls separately"
+
     }
+
