@@ -15,4 +15,8 @@ SLA_SCHEMA = {
     "late_payment_penalty": None,
     "red_flags": [],
     "contract_fairness_score": None
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> a2fd7e3 (Create sla_schema.py)
