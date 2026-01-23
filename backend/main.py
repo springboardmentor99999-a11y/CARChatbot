@@ -53,15 +53,15 @@ async def analyze_contract_api(file: UploadFile = File(...)):
         if not contract_text or not contract_text.strip():
             return {"error": "No readable text could be extracted from the PDF"}
 
-        # 4️⃣ Save raw contract text
+        # # 4️⃣ Save raw contract text
         contract_id = save_contract(file.filename, contract_text)
 
-        # 5️⃣ Rule-based SLA extraction (high precision)
+        # # 5️⃣ Rule-based SLA extraction (high precision)
         rule_sla = analyze_contract(contract_text)
 
         # 6️⃣ LLM-based SLA extraction (coverage & flexibility)
-        llm_sla = extract_sla_with_llm(contract_text)
 
+        llm_sla = extract_sla_with_llm(contract_text)
         # 7️⃣ Merge rule + LLM output safely
         final_sla = merge_rule_and_llm(rule_sla, llm_sla)
 
@@ -71,7 +71,7 @@ async def analyze_contract_api(file: UploadFile = File(...)):
         # 9️⃣ API response
         return {
             "contract_id": contract_id,
-            "sla": final_sla
+            "sla": final_sla,
         }
 
     except Exception:
@@ -79,6 +79,7 @@ async def analyze_contract_api(file: UploadFile = File(...)):
         return {
             "error": "Internal server error during contract analysis"
         }
+
 
 
 # ---------------- VIN LOOKUP ---------------- #

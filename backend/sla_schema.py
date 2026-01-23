@@ -1,4 +1,3 @@
-
 SLA_SCHEMA = {
     "contract_type": None,
     "interest_rate_apr": None,

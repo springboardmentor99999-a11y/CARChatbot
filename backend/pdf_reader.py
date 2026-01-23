@@ -36,3 +36,4 @@ def extract_text_from_pdf(pdf_bytes: bytes) -> str:
 
     except Exception:
         return ""
+
