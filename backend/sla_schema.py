@@ -14,5 +14,7 @@ SLA_SCHEMA = {
     "insurance_requirements": None,
     "late_payment_penalty": None,
     "red_flags": [],
-    "contract_fairness_score": None
+    "contract_fairness_score": None,
+    "market_apr_comparison": None,
+    "negotiation_points": []
 }

@@ -1,91 +1,105 @@
-CARChatbot Project
+# Car Lease/Loan Contract Analyzer
 
-Mentor: Mahaprasad Jena
-Repository: https://github.com/springboardmentor99999-a11y/CARChatbot
+An AI-powered web application for analyzing car lease and loan contracts, providing SLA extraction, fairness scoring, and negotiation assistance.
 
-🚗 Project Overview
+## Features
 
-CARChatbot is a machine learning + NLP-based chatbot that helps users with car-related queries such as:
+- PDF text extraction with OCR fallback
+- Dual SLA extraction (rule-based + LLM)
+- Fairness scoring with market comparison
+- AI-generated negotiation points
+- VIN decoding with estimated market price
+- Contract comparison tool
+- Web app interface with Streamlit
+- RESTful API with FastAPI
 
-Insurance assistance
+## Installation
 
-Loan and EMI support
+1. Clone the repository:
+```bash
+git clone <repo-url>
+cd <repo-dir>
+```
 
-Repair & maintenance suggestions
+2. Create and activate virtual environment:
+```bash
+python -m venv .venv
+# On Windows:
+.venv\Scripts\activate
+# On macOS/Linux:
+source .venv/bin/activate
+```
 
-Car model comparison
+3. Install dependencies:
+```bash
+pip install -r backend/requirements.txt
+```
 
-Troubleshooting common issues
+4. Set up environment variables:
+Create a `.env` file in the backend folder with:
+```
+OPENAI_API_KEY=your_key_here
+TESSERACT_PATH=C:\Program Files\Tesseract-OCR\tesseract.exe  # If on Windows
+```
 
-This repository will be developed by a batch of interns working under assigned branches.
+5. Initialize the database:
+```bash
+python backend/init_db.py
+```
 
-🔒 Branch Rules for Interns
-❗ DO NOT push anything to the main branch.
+## Running the Application
 
-All interns must work ONLY inside their assigned branch.
+### Backend API
+Start the FastAPI server:
+```bash
+uvicorn backend.main:app --reload
+```
+API available at `http://localhost:8000`
 
-Example branch names:
+### Web App
+Start the Streamlit app:
+```bash
+streamlit run app/app.py
+```
+App available at `http://localhost:8501`
 
-khushisu192-branch
+## API Endpoints
 
-harshithboyina-branch
+- `GET /` - Health check
+- `POST /analyze` - Upload PDF and get analysis (SLA, fairness, negotiation points)
+- `POST /compare` - Upload two PDFs and compare them
+- `GET /vin/{vin}` - Decode VIN with vehicle details and price estimate
 
-kanhaiyagupta6773-branch
+## Usage
 
-…and so on.
+1. Upload a contract PDF via the web app or API.
+2. Receive structured SLA data, fairness score, and personalized negotiation tips.
+3. Use VIN lookup for vehicle info.
 
-If you don't know your branch name, ask the mentor.
+## Git Commands
 
-🛠️ How Interns Should Work
-1️⃣ Clone the repository
-git clone https://github.com/springboardmentor99999-a11y/CARChatbot.git
-cd CARChatbot
-
-2️⃣ Create your branch
-git checkout -b <your-branch-name>
-
-3️⃣ Add your project files
-
-Place your:
-
-Python scripts
-
-Models
-
-Datasets
-
-Images
-
-Jupyter Notebooks
-
-Documentation
-
-4️⃣ Commit and push
+### To push changes:
+```bash
 git add .
-git commit -m "My first commit"
-git push origin <your-branch-name>
+git commit -m "Your commit message"
+git push origin HEAD:J_Lokeshprabu
+```
 
-📁 Recommended Folder Structure
-CARChatbot/
-│
-├── app/               # Main backend code
-├── models/            # ML models
-├── data/              # Training data
-├── notebooks/         # Jupyter notebooks
-├── images/            # Reference images or documentation visuals
-├── docs/              # Documentation files
-└── README.md
+### Branch Information
+- Local branch: main
+- Remote branch: J_Lokeshprabu
+- Repository: https://github.com/springboardmentor99999-a11y/CARChatbot
 
-✔️ Pull Request Process
+## Project Structure
 
-Once work is ready:
-
-Push to your branch
-
-Create a Pull Request to main
-
-Mentor will review and approve or request changes
-
-🙌 Contributing
-
-Follow guidelines in CONTRIBUTING.md (to be added soon).
+```
+├── backend/
+│   ├── main.py              # FastAPI application
+│   ├── contract_analyzer.py # Contract analysis logic
+│   ├── pdf_reader.py        # PDF text extraction
+│   ├── db.py                # Database operations
+│   └── requirements.txt     # Python dependencies
+├── uploads/                 # Uploaded PDF files
+├── models/                  # ML models
+└── data/                    # Training data
+```
