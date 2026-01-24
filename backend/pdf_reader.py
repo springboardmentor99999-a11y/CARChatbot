@@ -1,4 +1,3 @@
-
 from pdfminer.high_level import extract_text
 from pdf2image import convert_from_bytes
 import pytesseract

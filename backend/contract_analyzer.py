@@ -45,13 +45,13 @@ def analyze_contract(contract_text: str) -> dict:
     )
 
     apr_percent = extract_amount(
-        [r"APR.?(\d+\.?\d)%", r"interest.?(\d+\.?\d)%"],
+        [r"APR.*?(\d+\.?\d*)%", r"interest.*?(\d+\.?\d*)%"],
         text,
         float
     )
 
     monthly_payment = extract_amount(
-        [r"monthly.?₹?\s([\d]+)", r"EMI.?₹?\s([\d]+)"],
+        [r"monthly.*?₹?\s*([\d]+)", r"EMI.*?₹?\s*([\d]+)"],
         text,
         int
     )
@@ -63,32 +63,32 @@ def analyze_contract(contract_text: str) -> dict:
     ) or calculate_term_from_dates(text)
 
     down_payment = extract_amount(
-        [r"down payment.?₹?\s([\d]+)"],
+        [r"down payment.*?₹?\s*([\d]+)"],
         text,
         int
     )
 
     finance_amount = extract_amount(
-        [r"loan amount.?₹?\s([\d]+)", r"amount financed.?₹?\s([\d]+)"],
+        [r"loan amount.*?₹?\s*([\d]+)", r"amount financed.*?₹?\s*([\d]+)"],
         text,
         int
     )
 
     fees = {
-        "documentation_fee": extract_amount([r"documentation fee.?₹?\s([\d]+)"], text, int),
-        "registration_fee": extract_amount([r"registration fee.?₹?\s([\d]+)"], text, int),
-        "processing_fee": extract_amount([r"processing fee.?₹?\s([\d]+)"], text, int)
+        "documentation_fee": extract_amount([r"documentation fee.*?₹?\s*([\d]+)"], text, int),
+        "registration_fee": extract_amount([r"registration fee.*?₹?\s*([\d]+)"], text, int),
+        "processing_fee": extract_amount([r"processing fee.*?₹?\s*([\d]+)"], text, int)
     }
 
-    early_term = extract_amount([r"early termination.?₹?\s([\d]+)"], text, int)
+    early_term = extract_amount([r"early termination.*?₹?\s*([\d]+)"], text, int)
 
     penalties = {
-        "late_payment": extract_amount([r"late payment.?₹?\s([\d]+)"], text, int),
+        "late_payment": extract_amount([r"late payment.*?₹?\s*([\d]+)"], text, int),
         "early_termination": (
             "No penalty" if re.search(r"without penalty", text, re.I)
             else early_term if early_term else "Not specified"
         ),
-        "over_mileage": extract_amount([r"over mileage.?₹?\s([\d]+)"], text, int)
+        "over_mileage": extract_amount([r"over mileage.*?₹?\s*([\d]+)"], text, int)
     }
 
     red_flags = []
