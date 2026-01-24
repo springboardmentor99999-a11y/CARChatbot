@@ -12,11 +12,22 @@ from fairness_engine import calculate_fairness_score
 # from backend.vin_service import get_vehicle_details
 # from backend.fairness_engine import calculate_fairness_score
 
+from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(
     title="Car Lease / Loan Contract Review API",
     version="1.0",
     description="AI-powered contract analysis and negotiation assistant"
 )
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # For development only
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # ---------------- BASIC ENDPOINTS ---------------- #
 
