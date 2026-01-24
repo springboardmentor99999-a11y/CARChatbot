@@ -36,3 +36,20 @@ Thumbs.db
 
 # Database files
 *.db
+
+# Flutter (car_loan_app)
+car_loan_app/.dart_tool/
+car_loan_app/build/
+car_loan_app/.flutter-plugins
+car_loan_app/.flutter-plugins-dependencies
+car_loan_app/.metadata
+car_loan_app/.idea/
+car_loan_app/*.iml
+
+car_loan_app/android/.gradle/
+car_loan_app/android/app/build/
+
+car_loan_app/ios/Pods/
+car_loan_app/ios/.symlinks/
+car_loan_app/windows/flutter/ephemeral/
+
