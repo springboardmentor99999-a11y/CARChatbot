@@ -69,3 +69,73 @@ def save_sla(contract_id: int, sla_data: dict):
     )
     conn.commit()
     conn.close()
+
+
+def get_contract_by_id(contract_id: int) -> dict:
+    """Get a contract by its ID."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, file_name, raw_text, created_at FROM contracts WHERE id = ?",
+        (contract_id,)
+    )
+    row = cursor.fetchone()
+    conn.close()
+    
+    if row:
+        return {
+            "id": row[0],
+            "file_name": row[1],
+            "raw_text": row[2],
+            "created_at": row[3]
+        }
+    return None
+
+
+def get_sla_by_contract_id(contract_id: int) -> dict:
+    """Get SLA extraction for a contract."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT sla_json FROM sla_extractions WHERE contract_id = ?",
+        (contract_id,)
+    )
+    row = cursor.fetchone()
+    conn.close()
+    
+    if row and row[0]:
+        return json.loads(row[0])
+    return None
+
+
+def get_all_contracts() -> list:
+    """Get all contracts from database."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, file_name, created_at FROM contracts ORDER BY created_at DESC"
+    )
+    rows = cursor.fetchall()
+    conn.close()
+    
+    return [
+        {"id": row[0], "file_name": row[1], "created_at": row[2]}
+        for row in rows
+    ]
+
+
+def delete_contract(contract_id: int) -> bool:
+    """Delete a contract and its SLA extraction."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    # Delete SLA first
+    cursor.execute("DELETE FROM sla_extractions WHERE contract_id = ?", (contract_id,))
+    # Delete contract
+    cursor.execute("DELETE FROM contracts WHERE id = ?", (contract_id,))
+    
+    deleted = cursor.rowcount > 0
+    conn.commit()
+    conn.close()
+    
+    return deleted

@@ -1,23 +1,164 @@
+# Car Loan/Lease Contract Review and Negotiation AI Assistant
+
+## 🚗 Project Overview
+
+The Car Lease or Loan Contract Review and Negotiation App is an AI-driven application designed to assist consumers in understanding, reviewing, and negotiating their car lease or loan contracts. The application leverages Large Language Models (LLMs) for SLA extraction, identifies key contract terms, and provides transparency by cross-verifying vehicle pricing and history.
+
+## ✨ Key Features
+
+### 1. Contract Review and SLA Extraction
+- Upload PDF or image of your contract
+- AI-powered extraction of key terms:
+  - Interest rate / APR
+  - Lease term duration
+  - Monthly payment
+  - Down payment
+  - Mileage allowance
+  - Early termination clause
+  - And more...
+- **Contract Fairness Score** (0-100)
+
+### 2. VIN-Based Car Information
+- Vehicle details lookup via NHTSA API
+- Recall history
+- Manufacturer information
+
+### 3. Negotiation Assistant
+- AI chatbot for negotiation guidance
+- Suggested questions to ask dealers
+- Email draft generation
+- Personalized negotiation tips
+
+### 4. Price Estimation
+- Fair market value benchmarks
+- Price range estimation
+
+### 5. Contract Comparison
+- Side-by-side comparison of multiple offers
+- Visual comparison dashboard
+
+## 🏗️ Project Structure
+
+```
+CAR LOAN BOT/
+├── app/                          # Flutter Mobile App
+│   └── car_loan_assistant/
+│       └── lib/
+│           ├── config/           # App configuration
+│           ├── models/           # Data models
+│           ├── providers/        # State management
+│           ├── screens/          # UI screens
+│           ├── services/         # API services
+│           └── widgets/          # Reusable widgets
+├── backend/                      # Python FastAPI Backend
+│   ├── main.py                   # API endpoints
+│   ├── contract_analyzer.py      # Contract analysis
+│   ├── llm_sla_extractor.py     # LLM integration
+│   ├── vin_service.py           # VIN lookup
+│   ├── negotiation_assistant.py # Negotiation tips
+│   ├── fairness_engine.py       # Fairness scoring
+│   └── db.py                    # Database operations
+├── data/                         # Sample contracts
+├── models/                       # ML models
+└── samples/                      # Sample data
+```
+
+## 🚀 Getting Started
+
+### Backend Setup
+
+1. Create virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+2. Install dependencies:
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+3. Set environment variables:
+```bash
+export OPENAI_API_KEY=your_api_key_here
+```
+
+4. Run the server:
+```bash
+uvicorn backend.main:app --reload --port 8000
+```
+
+### Flutter App Setup
+
+1. Navigate to app directory:
+```bash
+cd app/car_loan_assistant
+```
+
+2. Install dependencies:
+```bash
+flutter pub get
+```
+
+3. Run the app:
+```bash
+flutter run
+```
+
+## 📱 API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Health check |
+| `/analyze` | POST | Upload and analyze contract (regex-based) |
+| `/analyze-llm` | POST | Analyze contract using LLM (GPT-4) |
+| `/analyze-text` | POST | Analyze raw contract text |
+| `/contracts` | GET | List all analyzed contracts |
+| `/contracts/{id}` | GET | Get specific contract details |
+| `/contracts/{id}` | DELETE | Delete a contract |
+| `/compare?ids=1,2,3` | GET | Compare multiple contracts |
+| `/vin/{vin}` | GET | VIN lookup with vehicle details |
+| `/vin/{vin}/recalls` | GET | Get recall information for VIN |
+| `/vin/{vin}/validate` | GET | Validate VIN checksum |
+| `/negotiate` | POST | Get negotiation tips |
+| `/negotiate/email` | POST | Generate negotiation email |
+| `/negotiate/questions` | GET | Get dealer questions list |
+| `/price-estimate` | GET | Get price estimate |
+| `/health` | GET | API health check |
+| `/api-info` | GET | List all available endpoints |
+
+## 🛠️ Tech Stack
+
+### Backend
+- **FastAPI** - Modern Python web framework
+- **OpenAI GPT** - LLM for contract analysis
+- **SQLite** - Local database
+- **NHTSA API** - Vehicle data
+
+### Frontend (Flutter)
+- **Provider** - State management
+- **Dio** - HTTP client
+- **Google Fonts** - Typography
+- **FL Chart** - Data visualization
+
+## 📊 Fairness Score Calculation
+
+The fairness score (0-100) is calculated based on:
+- Interest rate comparison to market average
+- Presence of early termination penalties
+- Documentation fees
+- Red flags in contract terms
+
+## 👥 Team
+
+**Mentor:** Mahaprasad Jena
+
+---
+
 CARChatbot Project
 
-Mentor: Mahaprasad Jena
 Repository: https://github.com/springboardmentor99999-a11y/CARChatbot
-
-🚗 Project Overview
-
-CARChatbot is a machine learning + NLP-based chatbot that helps users with car-related queries such as:
-
-Insurance assistance
-
-Loan and EMI support
-
-Repair & maintenance suggestions
-
-Car model comparison
-
-Troubleshooting common issues
-
-This repository will be developed by a batch of interns working under assigned branches.
 
 🔒 Branch Rules for Interns
 ❗ DO NOT push anything to the main branch.
