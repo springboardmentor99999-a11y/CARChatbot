@@ -4,7 +4,7 @@ import '../models/sla_model.dart';
 class ResultScreen extends StatelessWidget {
   final SlaModel sla;
 
-  const ResultScreen({Key? key, required this.sla}) : super(key: key);
+  const ResultScreen({super.key, required this.sla});
 
   @override
   Widget build(BuildContext context) {

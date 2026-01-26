@@ -12,55 +12,40 @@ def extract_amount(patterns, text, cast=float):
     for pattern in patterns:
         match = re.search(pattern, text, re.IGNORECASE)
         if match:
+            val = match.group(1)
+            # Sirf digits aur dot ko chhodein, baaki spaces aur symbols hata dein
+            clean_val = re.sub(r"[^\d.]", "", val)
             try:
-                return cast(match.group(1))
+                if not clean_val: return 0.0
+                return cast(clean_val)
             except:
-                return None
-    return None
-
-
-def calculate_term_from_dates(text):
-    match = re.search(
-        r"beginning on (\w+ \d{4}).*?ending on (\w+ \d{4})",
-        text,
-        re.IGNORECASE
-    )
-    if match:
-        start = datetime.strptime(match.group(1), "%B %Y")
-        end = datetime.strptime(match.group(2), "%B %Y")
-        return (end.year - start.year) * 12 + (end.month - start.month)
-    return None
-
+                continue
+    return 0.0
 
 def analyze_contract(contract_text: str) -> dict:
-    if not contract_text or len(contract_text) < 50:
-        raise ValueError("Contract text too short")
-
-    text = clean_text(contract_text)
-
+    text = contract_text 
+    
     loan_type = (
         "Vehicle Lease" if re.search(r"lease", text, re.I)
         else "Car Loan" if re.search(r"loan|finance|emi", text, re.I)
         else None
     )
-
+    # Updated flexible patterns
     apr_percent = extract_amount(
-        [r"APR.*?(\d+\.?\d*)%", r"interest.*?(\d+\.?\d*)%"],
-        text,
-        float
+        [r"(?:APR|interest)\s*[:\-]?\s*(\d+[\.\s]*\d*)\s*%"],
+        text, float
     )
-
+    
     monthly_payment = extract_amount(
-        [r"monthly.*?₹?\s*([\d]+)", r"EMI.*?₹?\s*([\d]+)"],
-        text,
-        int
+        [r"(?:monthly|EMI)\s*[:\-]?\s*₹?\s*([\d\s,]+)"],
+        text, float
     )
 
     term_months = extract_amount(
         [r"(?:tenure|loan term|lease term).*?(\d+)\s*months"],
         text,
         int
-    ) or calculate_term_from_dates(text)
+    ) 
 
     down_payment = extract_amount(
         [r"down payment.*?₹?\s*([\d]+)"],

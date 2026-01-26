@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, UploadFile, File
 import traceback
 
@@ -8,10 +7,20 @@ from backend.contract_analyzer import analyze_contract
 from backend.vin_service import get_vehicle_details
 from backend.fairness_engine import calculate_fairness_score
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(
     title="Car Lease / Loan Contract Review API",
     version="1.0",
     description="AI-powered contract analysis and negotiation assistant"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # ---------------- BASIC ENDPOINTS ---------------- #
@@ -73,14 +82,10 @@ async def analyze_contract_api(file: UploadFile = File(...)):
          "sla": final_sla,
          "fairness": fairness
         }
+       
 
-    except Exception:
-        traceback.print_exc()
-        return {
-            "error": "Internal server error during contract analysis"
-        }
-
-
+    except Exception as e:
+        return {"error": f"Internal server error: {str(e)}"}
 # ---------------- VIN LOOKUP ---------------- #
 
 @app.get("/vin/{vin}")

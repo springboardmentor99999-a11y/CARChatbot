@@ -4,19 +4,19 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ^3.10.7
 
 dependencies:
   flutter:
     sdk: flutter
   http: ^1.2.0
-  file_picker: ^5.2.9  
+  file_picker: ^6.1.1  
   cupertino_icons: ^1.0.6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true
