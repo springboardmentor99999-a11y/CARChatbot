@@ -1,0 +1,30 @@
+# backend/auth/security.py
+
+from passlib.context import CryptContext
+from datetime import datetime, timedelta
+import jwt
+from config import settings
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
+def verify_password(password, hashed):
+    return pwd_context.verify(password, hashed)
+
+
+def create_access_token(data: dict):
+    payload = data.copy()
+
+    expire = datetime.utcnow() + timedelta(
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+    )
+
+    payload["exp"] = expire
+
+    return jwt.encode(
+        payload,
+        settings.SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+    )

@@ -1,0 +1,8 @@
+fastapi 
+uvicorn 
+pypdf2 
+langchain 
+langchain-openai 
+python-dotenv 
+annotated-types 
+python-multipart
