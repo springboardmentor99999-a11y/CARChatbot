@@ -16,9 +16,9 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = "AutoLexis.db"
 
-    # OpenAI / OCR (NEW)
-    OPENAI_API_KEY: str | None = None
-    TESSERACT_PATH: str | None = None
+    # # OpenAI / OCR (NEW)
+    # OPENAI_API_KEY: str | None = None
+    # TESSERACT_PATH: str | None = None
 
     class Config:
         env_file = ".env"
