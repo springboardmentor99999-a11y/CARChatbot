@@ -98,12 +98,6 @@ def analyze_contract(contract_text: str) -> dict:
     if penalties["early_termination"] not in ["No penalty", "Not specified"]:
         red_flags.append("Early termination penalty present")
 
-    negotiation_points = []
-    if apr_percent:
-        negotiation_points.append("Ask for lower interest rate")
-    if fees["documentation_fee"]:
-        negotiation_points.append("Negotiate documentation fee")
-
     return {
         "loan_type": loan_type,
         "apr_percent": apr_percent,
@@ -113,8 +107,7 @@ def analyze_contract(contract_text: str) -> dict:
         "finance_amount": finance_amount,
         "fees": fees,
         "penalties": penalties,
-        "red_flags": red_flags,
-        "negotiation_points": negotiation_points
+        "red_flags": red_flags
     }
 def merge_rule_and_llm(rule_sla: dict, llm_sla: dict) -> dict:
     final = rule_sla.copy()

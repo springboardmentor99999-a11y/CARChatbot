@@ -109,7 +109,7 @@ export default function ResultPanel({ data, loading }) {
       </div>
     );
 
-  const { sla, fairness } = data;
+  const { sla, fairness, negotiation_points } = data;
 
   return (
     <div className="bg-white rounded-3xl shadow p-6 space-y-6">
@@ -161,6 +161,10 @@ export default function ResultPanel({ data, loading }) {
       {open && (
         <div className="border rounded-2xl p-4 max-h-[520px] overflow-y-auto">
           <NestedTable data={sla} />
+          <p className="font-bold border rounded p-2 max-h-[520px] overflow-y-auto mt-2">
+            Negotiation Points:
+            <p className="font-medium">{negotiation_points}</p>
+          </p>
         </div>
       )}
     </div>

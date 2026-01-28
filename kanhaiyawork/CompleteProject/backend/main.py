@@ -15,9 +15,11 @@ from database import (
 from config import settings
 
 from core.pdf_reader import extract_text_from_pdf
-from core.contract_analyzer import analyze_contract
+from core.contract_analyzer import analyze_contract, merge_rule_and_llm
+from core.llm_sla_extractor import extract_sla_with_llm
 from core.vin_service import get_vehicle_details
 from core.fairness_engine import calculate_fairness_score
+from core.negotiation_assistant import generate_negotiation_points
 
 
 app = FastAPI(title=settings.APP_NAME)
@@ -77,25 +79,41 @@ async def analyze_contract_api(file: UploadFile = File(...)):
         if not contract_text or not contract_text.strip():
             return {"error": "No readable text could be extracted from the PDF"}
 
-        # Save raw contract text
+        # Save raw contract text into contarcts table
         contract_id = save_contract(file.filename, contract_text)
-        # Rule-based SLA extraction
-        final_sla = analyze_contract(contract_text)
+
+        # Rule-based SLA extraction (high precision)
+        rule_sla = analyze_contract(contract_text)
+
+        # LLM-based SLA extraction (coverage & flexibility)
+        try:
+            llm_sla = extract_sla_with_llm(contract_text)
+        except Exception as e:
+            print("⚠️ OpenAI unavailable:", e)
+            llm_sla = {}
+
+        # Merge rule + LLM output safely
+        final_sla = merge_rule_and_llm(rule_sla, llm_sla)
 
         # Calculate fairness score
         fairness = calculate_fairness_score(final_sla)
 
+        # Calculate negotiation points
+        points = generate_negotiation_points(final_sla, fairness)
+
         # Store SLA + fairness together
         save_sla(contract_id, {
            "sla": final_sla,
-        "fairness": fairness
+        "fairness": fairness,
+        "negotiation_points": points
         })
 
         # API response
         return {
          "contract_id": contract_id,
          "sla": final_sla,
-         "fairness": fairness
+         "fairness": fairness,
+         "negotiation_points": points
         }
 
     except Exception:

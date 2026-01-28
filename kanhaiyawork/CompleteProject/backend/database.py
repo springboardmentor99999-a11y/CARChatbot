@@ -128,9 +128,11 @@ def get_contracts_with_sla(contract_ids: list[int]):
 
             obj["sla"] = parsed.get("sla", {})
             obj["fairness"] = parsed.get("fairness", {})
+            obj["negotiation_points"] = parsed.get("negotiation_points", {})
         else:
             obj["sla"] = {}
             obj["fairness"] = {}
+            obj["negotiation_points"] = {}
 
         del obj["sla_json"]
 
