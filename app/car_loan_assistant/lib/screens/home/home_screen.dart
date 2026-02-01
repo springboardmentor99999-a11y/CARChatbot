@@ -290,6 +290,13 @@ class HomeScreen extends StatelessWidget {
           color: AppTheme.primaryLight,
           onTap: () => Navigator.pushNamed(context, AppRoutes.history),
         ),
+        FeatureCard(
+          title: 'Price Estimate',
+          description: 'Market value',
+          icon: FontAwesomeIcons.dollarSign,
+          color: AppTheme.accentColor,
+          onTap: () => Navigator.pushNamed(context, AppRoutes.priceEstimation),
+        ),
       ],
     );
   }

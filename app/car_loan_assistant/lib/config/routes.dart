@@ -6,6 +6,7 @@ import '../screens/negotiation/negotiation_screen.dart';
 import '../screens/vin/vin_lookup_screen.dart';
 import '../screens/comparison/comparison_screen.dart';
 import '../screens/history/history_screen.dart';
+import '../screens/price/price_estimation_screen.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -15,6 +16,7 @@ class AppRoutes {
   static const String vinLookup = '/vin-lookup';
   static const String comparison = '/comparison';
   static const String history = '/history';
+  static const String priceEstimation = '/price-estimation';
   
   static Map<String, WidgetBuilder> get routes => {
     home: (context) => const HomeScreen(),
@@ -24,5 +26,6 @@ class AppRoutes {
     vinLookup: (context) => const VinLookupScreen(),
     comparison: (context) => const ComparisonScreen(),
     history: (context) => const HistoryScreen(),
+    priceEstimation: (context) => const PriceEstimationScreen(),
   };
 }
